@@ -1,7 +1,7 @@
 /*******************************************************************/
 /* COMP 304 Assignment 3 : File Systems
 /* Spring 2015
-/* Koç University
+/* Koï¿½ University
 /*
 /*******************************************************************/
 
@@ -519,4 +519,3 @@ void stats() {
 	printf("%d block%c free.\n",blocks_free,(blocks_free<=1?0:'s'));
 	printf("%d inode entr%s free.\n",inodes_free,(inodes_free<=1?"y":"ies"));
 }
-

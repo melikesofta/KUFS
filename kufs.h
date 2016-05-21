@@ -1,9 +1,9 @@
 /*******************************************************************/
 /* COMP 304 Assignment 3 : File Systems
-/* Spring 2015
-/* Ko� University
-/*
-/*******************************************************************/
+ Spring 2015
+ Ko� University
+
+******************************************************************/
 
 #include <stdio.h>
 #include <string.h>
@@ -73,8 +73,8 @@ void stats();
 /*############################################################################*/
 /****************************************************************************/
 /* returns the integer value of string s; -1 on error
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 int stoi(char *s, int n) {
 	int i;
@@ -90,9 +90,9 @@ int stoi(char *s, int n) {
 
 /****************************************************************************/
 /* returns the string representation of num in s
-/* n is the width of the number; 0 padded if required
-/*
-/****************************************************************************/
+ n is the width of the number; 0 padded if required
+
+***************************************************************************/
 
 void itos(char *s, int num, int n) {
 	char st[1024];
@@ -102,8 +102,8 @@ void itos(char *s, int num, int n) {
 
 /****************************************************************************/
 /* prints a prompt with current working directory
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 void printPrompt() {
 	printf("KUFS::%s# ",current_working_directory);
@@ -112,8 +112,8 @@ void printPrompt() {
 /*############################################################################*/
 /****************************************************************************/
 /* reads KUFS metadata into memory structures
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 void mountKUFS() {
 	int i;
@@ -146,9 +146,9 @@ void mountKUFS() {
 
 /****************************************************************************/
 /* reads a block of data from disk file into buffer
-/* returns 0 if invalid block number
-/*
-/****************************************************************************/
+ returns 0 if invalid block number
+
+***************************************************************************/
 
 int readKUFS(int block_number, char buffer[1024]) {
 
@@ -164,10 +164,10 @@ int readKUFS(int block_number, char buffer[1024]) {
 
 /****************************************************************************/
 /* writes a block of data from buffer to disk file
-/* if buffer is null pointer, then writes all zeros
-/* returns 0 if invalid block number
-/*
-/****************************************************************************/
+ if buffer is null pointer, then writes all zeros
+ returns 0 if invalid block number
+
+***************************************************************************/
 
 int writeKUFS(int block_number, char buffer[1024]) {
 	char empty_buffer[1024];
@@ -194,11 +194,11 @@ int writeKUFS(int block_number, char buffer[1024]) {
 /*############################################################################*/
 /****************************************************************************/
 /* finds the first available block using the block bitmap
-/* updates the bitmap
-/* writes the block bitmap to disk file
-/* returns -1 on error; otherwise the block number
-/*
-/****************************************************************************/
+ updates the bitmap
+ writes the block bitmap to disk file
+ returns -1 on error; otherwise the block number
+
+***************************************************************************/
 
 int getBlock() {
 	int i;
@@ -217,9 +217,9 @@ int getBlock() {
 
 /****************************************************************************/
 /* updates block bitmap when a block is no longer used
-/* blocks 0 through 3 are treated special; so they are always in use
-/*
-/****************************************************************************/
+ blocks 0 through 3 are treated special; so they are always in use
+
+***************************************************************************/
 
 void returnBlock(int index) {
 	if (index > 3  && index <= BLOCK_MAX) {
@@ -232,11 +232,11 @@ void returnBlock(int index) {
 
 /****************************************************************************/
 /* finds the first unused position in inode table using the inode bitmap
-/* updates the bitmap
-/* writes the inode bitmap to disk file
-/* returns -1 if table is full; otherwise the position
-/*
-/****************************************************************************/
+ updates the bitmap
+ writes the inode bitmap to disk file
+ returns -1 if table is full; otherwise the position
+
+***************************************************************************/
 
 int getInode() {
 	int i;
@@ -255,8 +255,8 @@ int getInode() {
 
 /****************************************************************************/
 /* updates inode bitmap when an inode entry is no longer used
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 void returnInode(int index) {
 	if (index > 0  && index <= INODE_MAX) {
@@ -271,8 +271,8 @@ void returnInode(int index) {
 /*############################################################################*/
 /****************************************************************************/
 /* makes root directory the current directory
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 void rd() {
 	CD_INODE_ENTRY = 0; // first inode entry is for root directory
@@ -282,8 +282,8 @@ void rd() {
 
 /****************************************************************************/
 /* lists all files and directories in the current directory
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 void ls() {
 	char itype;
@@ -336,9 +336,9 @@ void ls() {
 
 /****************************************************************************/
 /* moves into the directory <dname> within the current directory if
-/* it exists
-/*
-/****************************************************************************/
+ it exists
+
+***************************************************************************/
 
 void cd(char *dname) {
 	char itype;
@@ -396,9 +396,9 @@ void cd(char *dname) {
 
 /****************************************************************************/
 /* creates a new directory called <dname> in the current directory if the
-/* name is not already taken and there is still space available
-/*
-/****************************************************************************/
+ name is not already taken and there is still space available
+
+***************************************************************************/
 
 void md(char *dname) {
 	char itype;
@@ -506,8 +506,8 @@ void md(char *dname) {
 
 /****************************************************************************/
 /* prints number of free blocks in the disk and free inode entries in the inode table
-/*
-/****************************************************************************/
+
+***************************************************************************/
 
 void stats() {
 	int blocks_free=BLB, inodes_free=INB;

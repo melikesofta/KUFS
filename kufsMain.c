@@ -24,8 +24,6 @@ int main(void)
 {
   char inputBuffer[MAX_LINE]; 	        /* buffer to hold the command entered */
   char *args[MAX_LINE/2 + 1];	        /* command line (of 80) has max of 40 arguments */
-  pid_t child;            		/* process id of the child process */
-  int status;           		/* result from execv system call*/
   int shouldrun = 1;
 
 	mountKUFS();
@@ -50,7 +48,6 @@ int main(void)
 				cd(args[1]);
 			}
 			else if(strcmp(cmd, "md")==0){
-				printf("%s\n", args[1]);
 				md(args[1]);
 			}
 			else if(strcmp(cmd, "rd")==0){

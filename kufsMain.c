@@ -13,7 +13,7 @@
 #include <string.h>
 #include <sys/wait.h>
 #include "kufs.h"
-#include "kufs.cpp"
+#include "kufs.c"
 
 #define MAX_LINE       80 /* 80 chars per line, per command, should be enough. */
 
@@ -88,7 +88,7 @@ int parseCommand(char inputBuffer[], char *args[])
 
   /* read what the user enters on the command line */
   do {
-    printf("kush>");
+    printPrompt();
     fflush(stdout);
     length = read(STDIN_FILENO,inputBuffer,MAX_LINE);
   }

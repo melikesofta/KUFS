@@ -57,13 +57,13 @@ int main(void)
 				stats();
 			}
 			else if(strcmp(cmd, "display")==0){
-
+				display(args[1]);
 			}
 			else if(strcmp(cmd, "create")==0){
-
+				create(args[1]);
 			}
 			else if(strcmp(cmd, "rm")==0){
-
+				rm(args[1]);
 			}
 
       else { // if commandFound == 0

@@ -10,3 +10,20 @@
 #include <math.h>
 #include <stdlib.h>
 #include "kufs.h"
+
+
+void display(char *);
+void create(char *);
+void rm(char *);
+
+void display(char *fname) {
+
+}
+
+void create(char *fname) {
+
+}
+
+void rm(char *name) {
+
+}

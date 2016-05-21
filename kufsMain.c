@@ -41,51 +41,40 @@ int main(void)
 			readKUFS(5, buffer);
 		//	printf("%s\n", buffer);
 
-      child = fork();
-      if (child == 0) { /* child process */
+      char* cmd= args[0]; /* command i.e. first word of the input */
 
-        char* cmd= args[0]; /* command i.e. first word of the input */
+  		if(strcmp(args[0], "ls")==0){
+				ls();
+			}
+			else if(strcmp(cmd, "cd")==0){
+				cd(args[1]);
+			}
+			else if(strcmp(cmd, "md")==0){
+				printf("%s\n", args[1]);
+				md(args[1]);
+			}
+			else if(strcmp(cmd, "rd")==0){
+				rd();
+			}
+			else if(strcmp(cmd, "stats")==0){
+				stats();
+			}
+			else if(strcmp(cmd, "display")==0){
 
-    		if(strcmp(args[0], "ls")==0){
+			}
+			else if(strcmp(cmd, "create")==0){
 
-				}
-				else if(strcmp(args[0], "cd")==0){
+			}
+			else if(strcmp(cmd, "rm")==0){
 
-				}
-				else if(strcmp(args[0], "md")==0){
+			}
 
-				}
-				else if(strcmp(args[0], "rd")==0){
-
-				}
-				else if(strcmp(args[0], "stats")==0){
-
-				}
-				else if(strcmp(args[0], "display")==0){
-
-				}
-				else if(strcmp(args[0], "create")==0){
-
-				}
-				else if(strcmp(args[0], "rm")==0){
-
-				}
-
-	      else { // if commandFound == 0
-	        printf("%s: command not found.\n", cmd);
-	      }
-	      exit(0);
-    }
-
-		else { /* parent process */
-			int status;
-			int status2;
-			waitpid(-1, &status, 0); //wait for the children
-			waitpid(0, &status2, 0);
+      else { // if commandFound == 0
+        printf("%s: command not found.\n", cmd);
+      }
 		}
 	}
-}
-return 0;
+	return 0;
 }
 
 // the following function is directly taken from KUSH project

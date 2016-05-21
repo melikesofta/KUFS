@@ -9,7 +9,6 @@
 #include <string.h>
 #include <math.h>
 #include <stdlib.h>
-#include "kufs.h"
 
 
 void display(char *);

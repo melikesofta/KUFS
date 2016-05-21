@@ -67,17 +67,20 @@ void display(char *fname) {
     _inode_entry fnode = _inode_table[e_inode];
     if((x = stoi(fnode.XX, 2)) != 0){
       readKUFS(x, buffer);
-      printf("%s\n", buffer);
+      printf("%s", buffer);
     }
     if((y = stoi(fnode.YY, 2)) != 0){
       readKUFS(stoi(fnode.YY,2), buffer);
-      printf("%s\n", buffer);
+      printf("%s", buffer);
     }
     if((z = stoi(fnode.ZZ, 2)) != 0){
       readKUFS(stoi(fnode.ZZ,2), buffer);
-      printf("%s\n", buffer);
+      printf("%s", buffer);
     }
-
+    if(x==0 && y==0 && z==0){
+      printf("File empty!");
+    }
+    printf("\n");
   }
   else {
     printf("%.252s: File not found.\n",fname);

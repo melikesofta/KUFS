@@ -16,6 +16,8 @@ void create(char *);
 void rm(char *);
 
 void display(char *fname) {
+  //this function was mostly adapted from cd()
+  //first we will find the file within current directory
 
   char itype;
   int blocks[3];
@@ -39,7 +41,7 @@ void display(char *fname) {
     exit(1);
   }
 
-  // now lets try to see if a directory by the name already exists
+  // now lets try to see if a file by the name already exists
   for (i=0; i<3; i++) {
     if (blocks[i]==0) continue;	// 0 means pointing at nothing
 
@@ -51,7 +53,8 @@ void display(char *fname) {
 
       e_inode = stoi(_directory_entries[j].MMM,3);	// this is the inode that has more info about this entry
 
-      if (_inode_table[e_inode].TT[0]=='F') { // entry is for a directory; can't cd into a file, right?
+      //difference from cd() starts here:
+      if (_inode_table[e_inode].TT[0]=='F') { // entry is for a file; can't display a directory, right?
         if (strncmp(fname,_directory_entries[j].fname, 252) == 0) {	// and it is the one we are looking for
           found = 1;	// VOILA
           break;
@@ -61,10 +64,17 @@ void display(char *fname) {
     if (found) break; // no need to search more
   }
 
+  //this is the actual part of the code we wrote
   if (found) {
     int x,y,z;
     char buffer[1024];
+    //get current inode entry, we'll need the block addresses from that
     _inode_entry fnode = _inode_table[e_inode];
+
+    //read the blocks at xx, yy, and zz respectively
+    //if they are meaningful print them on the screen
+    //note that no "\n" is printed in between blocks
+    //since they are continuous parts of a file
     if((x = stoi(fnode.XX, 2)) != 0){
       readKUFS(x, buffer);
       printf("%s", buffer);
@@ -77,6 +87,8 @@ void display(char *fname) {
       readKUFS(stoi(fnode.ZZ,2), buffer);
       printf("%s", buffer);
     }
+
+    //if we found the file but printed nothing
     if(x==0 && y==0 && z==0){
       printf("File empty!");
     }
@@ -86,6 +98,7 @@ void display(char *fname) {
     printf("%.252s: File not found.\n",fname);
   }
 }
+
 
 void create(char *fname) {
 

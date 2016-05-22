@@ -36,9 +36,6 @@ int main(void)
 		}
     else {
 
-			readKUFS(5, buffer);
-		//	printf("%s\n", buffer);
-
       char* cmd= args[0]; /* command i.e. first word of the input */
 
   		if(strcmp(args[0], "ls")==0){

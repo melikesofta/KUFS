@@ -12,6 +12,9 @@
 void display(char *);
 void create(char *);
 void rm(char *);
+void rmFile(int,int);
+void rmEmptyDir(int,int);
+void rmRecursiveDir(int,int);
 char fileContent[3072];
 
 void display(char *fname) {
@@ -253,6 +256,259 @@ void create(char *fname) {
 
 }
 
-void rm(char *name) {
+void rm(char *fname) {
+  //this function was mostly adapted from cd() in order to search the file with name fname.
+  //first we will find the file within current directory
 
+  char itype;
+  int blocks[3];
+  _directory_entry _directory_entries[4];
+
+  int i,j;
+  int e_inode;
+
+  char found=0;
+
+  // read inode entry for current directory
+  // in KUFS, an inode can point to three blocks at the most
+  itype = _inode_table[CD_INODE_ENTRY].TT[0];
+  blocks[0] = stoi(_inode_table[CD_INODE_ENTRY].XX,2);
+  blocks[1] = stoi(_inode_table[CD_INODE_ENTRY].YY,2);
+  blocks[2] = stoi(_inode_table[CD_INODE_ENTRY].ZZ,2);
+
+  // its a directory; so the following should never happen
+  if (itype=='F') {
+    printf("Fatal Error! Aborting.\n");
+    exit(1);
+  }
+
+  // now lets try to see if a file by the name already exists
+  for (i=0; i<3; i++) {
+    if (blocks[i]==0) continue;	// 0 means pointing at nothing
+
+    readKUFS(blocks[i],(char *)_directory_entries);	// lets read a directory entry; notice the cast
+
+    // so, we got four possible directory entries now
+    for (j=0; j<4; j++) {
+      if (_directory_entries[j].F=='0') continue;	// means unused entry
+
+      e_inode = stoi(_directory_entries[j].MMM,3);	// this is the inode that has more info about this entry
+
+      //difference from cd() starts here:
+      if (strncmp(fname,_directory_entries[j].fname, 252) == 0) {	// and it is the one we are looking for
+          found = 1;	// VOILA
+          break;
+      }
+
+    }
+    if (found) break; // no need to search more
+  }
+  //Here is the call to the rmRecursiveDir:
+  if (found) {
+    rmRecursiveDir(CD_INODE_ENTRY,e_inode);
+  }
+  else {
+    printf("%.252s: File not found.\n",fname);
+  }
+}
+
+void rmFile(int currentDirIndex, int fileIndex){ //removes a single file in current directory
+  //First of all, get the inode of directory in which our file exists.
+  _directory_entry _dentries[4];
+  _inode_entry cdInode;
+  int cdblocks[3];
+  char cditype;
+
+  cdInode =_inode_table[currentDirIndex];
+  cditype = cdInode.TT[0];
+  cdblocks[0] = stoi(cdInode.XX,2);
+  cdblocks[1] = stoi(cdInode.YY,2);
+  cdblocks[2] = stoi(cdInode.ZZ,2);
+
+  //Since we are in a directory, we will traverse through these blocks, find the directoryentry of our file
+  int found;
+  int i,j;
+  for(i=0;i<3;i++){
+    if(cdblocks[i]==0) continue;
+    readKUFS(cdblocks[i],(char *)_dentries);	// lets read a directory entry; notice the cast
+    for(j=0;j<4;j++){
+      if(stoi(_dentries[j].MMM,3)==fileIndex){ //then we found the directoryentry of our file! Make it 000...0
+        found = 1;
+        _dentries[j].F='0';
+        int k;
+        for(k=0;k<252;k++){
+          _dentries[j].fname[k] = '0';
+        }
+        _dentries[j].MMM[0] = '0';
+        _dentries[j].MMM[1] = '0';
+        _dentries[j].MMM[2] = '0';
+        break;
+      }
+    }
+    if(found){
+      writeKUFS(cdblocks[i],(char *)_dentries); //Now we are changing the block in which directory entry of the file exists.
+      char buf[1024];
+      int l;
+      for(l=0;l<1024;l++){
+        buf[l] = '0';
+      }
+      if(strncmp((char*)_dentries,buf,1024)==0){ //If it is the last directory entry in the block (which is nonzero) then we need to delete that block
+        returnBlock(cdblocks[i]);
+      }
+      break;
+    }
+  }
+  //Now we will remove the contents of the file:
+
+  _inode_entry fnode;
+  int blocks[3];
+
+  fnode =_inode_table[fileIndex];
+  blocks[0] = stoi(fnode.XX,2);
+  blocks[1] = stoi(fnode.YY,2);
+  blocks[2] = stoi(fnode.ZZ,2);
+
+  //Now we will again traverse through blocks, if content found then they will be removed
+  char empty_buffer[1024];
+  empty_buffer[0] = '\0';
+  for(i=0;i<3;i++){
+    if(blocks[i]==0) continue;
+    writeKUFS(blocks[i],empty_buffer); //we are deleting the contents
+    returnBlock(blocks[i]);
+  }
+  //Now make the corresponding inode "00000000":
+  strncpy(fnode.TT,"00",2);
+  strncpy(fnode.XX,"00",2);
+  strncpy(fnode.YY,"00",2);
+  strncpy(fnode.ZZ,"00",2);
+  _inode_table[fileIndex] = fnode;
+  returnInode(fileIndex);
+  writeKUFS(BLOCK_INODE_TABLE, (char *)_inode_table);
+
+}
+
+void rmEmptyDir(int currentDirIndex, int targetDirIndex){
+  //First of all, get the inode of directory in which our empty directory exists.
+  _directory_entry _dentries[4];
+  _inode_entry cdInode;
+  int cdblocks[3];
+  char cditype;
+
+  cdInode =_inode_table[currentDirIndex];
+  cditype = cdInode.TT[0];
+  cdblocks[0] = stoi(cdInode.XX,2);
+  cdblocks[1] = stoi(cdInode.YY,2);
+  cdblocks[2] = stoi(cdInode.ZZ,2);
+
+  //Since we are in a directory, we will traverse through these blocks, find the directoryentry of our empty directory as we did in rmFile():
+  int found=0;
+  int i,j;
+  for(i=0;i<3;i++){
+    if(cdblocks[i]==0) continue;
+    readKUFS(cdblocks[i],(char *)_dentries);	// lets read a directory entry; notice the cast
+    for(j=0;j<4;j++){
+      if(stoi(_dentries[j].MMM,3)==targetDirIndex){ //then we found the directoryentry of our empty directory! Make it 000...0
+        found = 1;
+        _dentries[j].F='0';
+        int k;
+        for(k=0;k<252;k++){
+          _dentries[j].fname[k] = '0';
+        }
+        _dentries[j].MMM[0] = '0';
+        _dentries[j].MMM[1] = '0';
+        _dentries[j].MMM[2] = '0';
+        break;
+      }
+    }
+    if(found){
+      writeKUFS(cdblocks[i],(char *)_dentries);
+      char buf[1024];
+      int l;
+      for(l=0;l<1024;l++){
+        buf[l] = '0';
+      }
+      if(strncmp((char*)_dentries,buf,1024)==0){ //if the deleted one was the last entry in the block
+        returnBlock(cdblocks[i]);
+        if(i==0){
+          cdInode.XX[0]='0';
+          cdInode.XX[1]='0';
+        }else if(i==1){
+          cdInode.YY[0]='0';
+          cdInode.YY[1]='0';
+        }else if(i==2){
+          cdInode.ZZ[0]='0';
+          cdInode.ZZ[1]='0';
+        }
+        _inode_table[currentDirIndex] = cdInode;
+      }
+      break;
+    }
+  }
+  //Now we will remove the empty directory:
+  _inode_entry dnode;
+  dnode =_inode_table[targetDirIndex];
+  //Now make the corresponding inode "00000000": We only need to change TT since it is an empty directory, XX=YY=ZZ=0.
+  strncpy(dnode.TT,"00",2);
+  _inode_table[targetDirIndex] = dnode;
+  returnInode(targetDirIndex);
+  writeKUFS(BLOCK_INODE_TABLE, (char *)_inode_table);
+}
+
+/*
+  If the directory is non empty, then we need to call this function recursively for any file or directory
+  in the directory we will delete. If there is a file in our directory, then rmFile() will apply, if empty directory,
+  then rmEmptyDir() will apply, otherwise it is a nonempty directory, then we will just call this function.
+
+*/
+void rmRecursiveDir(int currentDirIndex, int targetindex){
+
+  //The same logic in rmFile, in order to find all the files/directories in the directory that will be deleted.
+  _inode_entry dnode;
+  _directory_entry _dirEntries[4];
+  int blocks[3];
+  char ditype;
+  dnode =_inode_table[targetindex];
+  ditype = dnode.TT[0];
+  blocks[0] = stoi(dnode.XX,2);
+  blocks[1] = stoi(dnode.YY,2);
+  blocks[2] = stoi(dnode.ZZ,2);
+
+  int i,j;
+  for(i=0;i<3;i++){
+    if(blocks[i]==0) continue;
+    readKUFS(blocks[i],(char *)_dirEntries);	// lets read a directory entry; notice the cast
+    int index;
+    for(j=0;j<4;j++){
+      index=stoi(_dirEntries[j].MMM,3); //index of any file in the directory.
+      _inode_entry temp;
+      if(index==0) continue; //if index=0, then the entry just consists of 0, neither file nor directory.
+      temp = _inode_table[index];
+      char type;
+      type = temp.TT[0];
+      if(type=='F'){ //File case
+        rmFile(targetindex,index);
+      }else if(type=='D'){ //Directory case
+        int bl[3];
+        bl[0] = stoi(temp.XX,2);
+        bl[1] = stoi(temp.XX,2);
+        bl[2] = stoi(temp.XX,2);
+        if(bl[0]==0 && bl[1] == 0 && bl[2] == 0){ //Empty directory case
+          rmEmptyDir(targetindex,index);
+        }else{
+          rmRecursiveDir(targetindex,index); //Recursive call for non empty directory;
+        }
+      }
+    }
+  }
+  //For making the inode DI000000
+  dnode.XX[0]='0';
+  dnode.XX[1]='0';
+  dnode.YY[0]='0';
+  dnode.YY[1]='0';
+  dnode.ZZ[0]='0';
+  dnode.ZZ[1]='0';
+  _inode_table[targetindex]=dnode;
+  //Now our target directory is empty, rm it:
+  rmEmptyDir(currentDirIndex,targetindex);
+  writeKUFS(BLOCK_INODE_TABLE, (char *)_inode_table);
 }

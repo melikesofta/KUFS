@@ -26,49 +26,58 @@ int main(void)
   char *args[MAX_LINE/2 + 1];	        /* command line (of 80) has max of 40 arguments */
   int shouldrun = 1;
 
-	mountKUFS();
+  mountKUFS();
 
   while (shouldrun){            /* Program terminates normally inside setup */
     shouldrun = parseCommand(inputBuffer,args);       /* get next command */
 
     if (strncmp(inputBuffer, "exit", 4) == 0){
-    shouldrun = 0;     /* Exiting from kush*/
-		}
+      shouldrun = 0;     /* Exiting from kush*/
+    }
     else {
 
       char* cmd= args[0]; /* command i.e. first word of the input */
 
-  		if(strcmp(args[0], "ls")==0){
-				ls();
-			}
-			else if(strcmp(cmd, "cd")==0){
-				cd(args[1]);
-			}
-			else if(strcmp(cmd, "md")==0){
-				md(args[1]);
-			}
-			else if(strcmp(cmd, "rd")==0){
-				rd();
-			}
-			else if(strcmp(cmd, "stats")==0){
-				stats();
-			}
-			else if(strcmp(cmd, "display")==0){
-				display(args[1]);
-			}
-			else if(strcmp(cmd, "create")==0){
-				create(args[1]);
-			}
-			else if(strcmp(cmd, "rm")==0){
-				rm(args[1]);
-			}
-
+      if(strcmp(args[0], "ls")==0){
+        ls();
+      }
+      else if(strcmp(cmd, "cd")==0){
+        if(args[1]!=NULL){
+          cd(args[1]);
+        }
+      }
+      else if(strcmp(cmd, "md")==0){
+        if(args[1]!=NULL){
+          md(args[1]);
+        }
+      }
+      else if(strcmp(cmd, "rd")==0){
+        rd();
+      }
+      else if(strcmp(cmd, "stats")==0){
+        stats();
+      }
+      else if(strcmp(cmd, "display")==0){
+        if(args[1]!=NULL){
+          display(args[1]);
+        }
+      }
+      else if(strcmp(cmd, "create")==0){
+        if(args[1]!=NULL){
+          create(args[1]);
+        }
+      }
+      else if(strcmp(cmd, "rm")==0){
+        if(args[1]!=NULL){
+          rm(args[1]);
+        }
+      }
       else { // if commandFound == 0
         printf("%s: command not found.\n", cmd);
       }
-		}
-	}
-	return 0;
+    }
+  }
+  return 0;
 }
 
 // the following function is directly taken from KUSH project
